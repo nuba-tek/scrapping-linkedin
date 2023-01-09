@@ -1,0 +1,7 @@
+.idea/
+
+
+# virtualenv
+.venv/
+venv/
+ENV/
