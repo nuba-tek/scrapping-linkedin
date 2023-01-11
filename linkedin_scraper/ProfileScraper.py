@@ -1,5 +1,12 @@
+from bs4 import BeautifulSoup
+from selenium.common import TimeoutException, WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+
 from linkedin_scraper.Profile import Profile
 from linkedin_scraper.LinkedinScraper import LinkedinScraper
+from selenium.webdriver.support import expected_conditions as EC
+import logging
 
 """
 
@@ -11,32 +18,96 @@ class ProfileScraper(LinkedinScraper):
     def scrape(self, profile_id):
         """
 
+        :param profile_id: Linkedin profile's ID
+        :return: profile details as a dict
+        """
+        try:
+            page = self.get_profile_page(profile_id)
+
+            intro = self.get_intro(page)
+
+            profile = Profile(intro=intro)
+            return profile
+        except WebDriverException as e:
+            logging.error(str(e))
+            return
+
+    def get_profile_page(self, profile_id):
+        """
+
         :param profile_id:
         :return:
         """
         try:
             profile_url = 'https://www.linkedin.com/in/{}'.format(profile_id)
             self.driver.get(profile_url)
-            # profile = Profile()
-            return "profile"
-        except:
-            return False
+            try:
+                WebDriverWait(self.driver, 60).until(
+                    EC.presence_of_element_located((By.ID, "profile-content")))
+            except TimeoutException as e:
+                logging.error(str(e))
+                raise ValueError("Profile not found")
+            self.driver.implicitly_wait(20)
 
-    def scrap_intro(self):
+            src = self.driver.page_source
+            page = BeautifulSoup(src, 'html.parser')
+            return page
+        except WebDriverException as e:
+            logging.error(str(e))
+            raise WebDriverException
+
+    def get_intro(self, page):
+        """
+        Get profil intro : name, headline, education, current company
+        :param page: page html
+        :return: dict containig : "Name", "Headline", "Education", "Current company"
+        """
+        try:
+            intro_div = page.find('div', {'class': 'pv-text-details__left-panel'})
+            name_h1 = intro_div.find("h1")
+            name = name_h1.get_text().strip()
+
+            headline_div = intro_div.find("div", {'class': ['text-body-medium', 'break-words']})
+            headline = headline_div.get_text().strip()
+
+            details_ul = page.find('ul', {'class': 'pv-text-details__right-panel'})
+            education = ''
+            current_company = ''
+            for li in details_ul.find_all("li"):
+                btn = li.find("button")
+                if btn.has_attr("aria-label"):
+                    if btn['aria-label'].startswith('Education'):
+                        education = li.text.strip()
+                    if btn['aria-label'].startswith('Current company'):
+                        current_company = li.text.strip()
+
+            return {"Name": name,
+                    "Headline": headline,
+                    "Current_company": current_company,
+                    "Education": education,
+                    "Location": "location"}
+        except AttributeError as e:
+            logging.error(e)
+
+    def get_About(self, page):
         """
 
         :return:
         """
+        div_about_head = page.find('div', {'id': 'about'})
+        pr = div_about_head.parents
+
         return
 
-    def scrap_education(self):
+    def scrap_experience(self, page):
         """
 
         :return:
         """
+        div_experience_head = page.find('div', {'id': 'experience'})
         return
 
-    def scrap_experience(self):
+    def get_education(self):
         """
 
         :return:
@@ -70,6 +141,3 @@ class ProfileScraper(LinkedinScraper):
         :return:
         """
         return
-
-
-ProfileScraper().scrape("bmdnsoumia")

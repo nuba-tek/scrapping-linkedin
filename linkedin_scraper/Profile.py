@@ -4,8 +4,7 @@
 
 
 class Profile:
-    def __init__(self, intro, experience, education, skills, licenses, publications, projects):
-        # ['firstname', 'lastname', 'Headline', 'current_position', 'education', 'location', 'about','connections]
+    def __init__(self, intro, experience=None, education=None, skills=None, licenses=None, publications=None, projects=None):
         self.intro = intro
         self.experience = experience
         self.education = education

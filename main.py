@@ -1,4 +1,5 @@
 import argparse
+from linkedin_scraper.ProfileScraper import ProfileScraper
 
 
 def run_scraper(first_name, last_name, profile_id):
@@ -10,10 +11,9 @@ def run_scraper(first_name, last_name, profile_id):
     :return:
     """
     if profile_id is not None:
-        # run_scraper(profile_id=profile_id)
         print("Start scraping Linkedin account with profile_id={0}".format(profile_id))
+        ProfileScraper().scrape(profile_id)
     elif (first_name is not None) | (last_name is not None):
-        # run_scraper(first_name=first_name, last_name=last_name)
         print("Start scraping Linkedin accounts with firstname={0} and lastname={1}".format(first_name, last_name))
     pass
 
