@@ -1,3 +1,5 @@
+import json
+
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException, WebDriverException
 from selenium.webdriver.common.by import By
@@ -7,6 +9,8 @@ from linkedin_scraper.Profile import Profile
 from linkedin_scraper.LinkedinScraper import LinkedinScraper
 from selenium.webdriver.support import expected_conditions as EC
 import logging
+
+from linkedin_scraper.helpers.s3_client import S3Client
 
 """
 
@@ -27,6 +31,9 @@ class ProfileScraper(LinkedinScraper):
             intro = self.get_intro(page)
 
             profile = Profile(intro=intro)
+            profile_json = json.dumps(profile.__dict__).encode('UTF-8')
+            S3Client().put_object(body=bytes(profile_json), object_key='test/profile.txt')
+
             return profile
         except WebDriverException as e:
             logging.error(str(e))
@@ -62,24 +69,31 @@ class ProfileScraper(LinkedinScraper):
         :param page: page html
         :return: dict containig : "Name", "Headline", "Education", "Current company"
         """
+        name = ''
+        headline = ''
+        education = ''
+        current_company = ''
         try:
             intro_div = page.find('div', {'class': 'pv-text-details__left-panel'})
-            name_h1 = intro_div.find("h1")
-            name = name_h1.get_text().strip()
+            if intro_div is not None:
+                name_h1 = intro_div.find("h1")
+                name = name_h1.get_text().strip()
+            else:
+                logging.warning("")
 
             headline_div = intro_div.find("div", {'class': ['text-body-medium', 'break-words']})
-            headline = headline_div.get_text().strip()
+            if headline_div is not None:
+                headline = headline_div.get_text().strip()
 
             details_ul = page.find('ul', {'class': 'pv-text-details__right-panel'})
-            education = ''
-            current_company = ''
-            for li in details_ul.find_all("li"):
-                btn = li.find("button")
-                if btn.has_attr("aria-label"):
-                    if btn['aria-label'].startswith('Education'):
-                        education = li.text.strip()
-                    if btn['aria-label'].startswith('Current company'):
-                        current_company = li.text.strip()
+            if details_ul is not None:
+                for li in details_ul.find_all("li"):
+                    btn = li.find("button")
+                    if btn.has_attr("aria-label"):
+                        if btn['aria-label'].startswith('Education'):
+                            education = li.text.strip()
+                        if btn['aria-label'].startswith('Current company'):
+                            current_company = li.text.strip()
 
             return {"Name": name,
                     "Headline": headline,
