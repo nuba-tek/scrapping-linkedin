@@ -9,6 +9,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 import time
 
+import config
+
 """
 
 """
@@ -24,16 +26,15 @@ class LinkedinScraper:
             # options.add_argument('--user-agent')
             # options.add_argument('--headless')
             self.driver = webdriver.Chrome(options=options)
-            self.driver.set_window_size(1920, 1080)
+            self.driver.maximize_window()
 
             self.driver.get("https://linkedin.com/uas/login")
             try:
                 WebDriverWait(self.driver, 60).until(EC.presence_of_element_located((By.ID, "username")))
             except TimeoutException as e:
                 raise ValueError
-            self.login(username="", password="1234567890")
+            self.login(username=config.LINKEDIN_USERNAME, password=config.LINKEDIN_PASSWORD)
             self.driver.implicitly_wait(20)
-            time.sleep(20)
         except WebDriverException as e:
             logging.error(str(e))
 
