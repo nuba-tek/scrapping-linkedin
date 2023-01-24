@@ -5,6 +5,9 @@ from selenium.common.exceptions import NoSuchElementException, WebDriverExceptio
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 import logging
 import time
@@ -25,7 +28,9 @@ class LinkedinScraper:
             options.add_argument('--incognito')
             # options.add_argument('--user-agent')
             # options.add_argument('--headless')
-            self.driver = webdriver.Chrome(options=options)
+            service = Service(
+                executable_path=config.CHROME_DRIVER_PATH)  # ChromeService(executable_path=ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(options=options, service=service)
             self.driver.maximize_window()
 
             self.driver.get("https://linkedin.com/uas/login")
