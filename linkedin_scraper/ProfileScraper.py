@@ -10,7 +10,6 @@ from linkedin_scraper.LinkedinScraper import LinkedinScraper
 from selenium.webdriver.support import expected_conditions as EC
 import logging
 
-from linkedin_scraper.helpers.s3_client import S3Client
 
 """
 
@@ -30,9 +29,8 @@ class ProfileScraper(LinkedinScraper):
 
             intro = self.get_intro(page)
 
-            profile = Profile(intro=intro)
-            profile_json = json.dumps(profile.__dict__).encode('UTF-8')
-            S3Client().put_object(body=bytes(profile_json), object_key='test/profile.txt')
+            profile = Profile(profile_id=profile_id, intro=intro)
+            profile.save_profile()
 
             return profile
         except WebDriverException as e:

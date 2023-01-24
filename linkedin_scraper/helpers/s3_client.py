@@ -16,6 +16,7 @@ class S3Client:
                 region_name=region_name,
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key)
+
         except ClientError as e:
             logging.error(e)
 
@@ -29,7 +30,6 @@ class S3Client:
         """
         try:
             self.s3_resource.Object(bucket_name=bucket_name, key=object_key).put(Body=body)
-            return True
         except ClientError as e:
             logging.error(e)
-            return False
+            raise ClientError
