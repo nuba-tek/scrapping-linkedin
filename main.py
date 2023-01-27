@@ -12,10 +12,10 @@ def run_scraper(first_name, last_name, profile_id):
     """
     if profile_id is not None:
         print("Start scraping Linkedin account with profile_id={0}".format(profile_id))
-        ProfileScraper().scrape(profile_id)
+        profile = ProfileScraper().scrape(profile_id)
+        return profile
     elif (first_name is not None) | (last_name is not None):
         print("Start scraping Linkedin accounts with firstname={0} and lastname={1}".format(first_name, last_name))
-    pass
 
 
 parser = argparse.ArgumentParser(description="Linkedin scraper")
@@ -31,6 +31,7 @@ if __name__ == '__main__':
         last_name = args.lastname
         profile_id = args.profile_id
 
-        run_scraper(fist_name, last_name, profile_id)
+        profile = run_scraper(fist_name, last_name, profile_id)
+        print(profile)
     except AttributeError as e:
         print(e)

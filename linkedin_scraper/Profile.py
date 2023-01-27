@@ -10,7 +10,8 @@ import logging
 
 
 class Profile:
-    def __init__(self, profile_id, intro, experience=None, education=None, skills=None, licenses=None, publications=None, projects=None):
+    def __init__(self, profile_id, intro, experience=None, education=None, skills=None, licenses=None,
+                 publications=None, projects=None):
         self.profile_id = profile_id
         self.intro = intro
         self.experience = experience
@@ -20,9 +21,17 @@ class Profile:
         self.publications = publications
         self.projects = projects
 
-    def save_profile(self):
-        profile_json = json.dumps(self.__dict__).encode('UTF-8')
+    def __str__(self):
+        return json.dumps(self.__dict__, ensure_ascii=False).encode('UTF-8')
+
+    def __repr__(self):
+        return self.__str__()
+
+    def to_json(self):
+        return self.__str__()
+
+    def save(self):
         try:
-            S3Client().put_object(body=bytes(profile_json), object_key='test/{0}.json'.format(self.profile_id))
+            S3Client().put_object(body=bytes(self.to_json()), object_key='test/{0}_{1}.json'.format(self.intro["name"], self.profile_id))
         except ClientError as e:
             logging.error(e)

@@ -1,13 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException, WebDriverException, JavascriptException, TimeoutException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service as ChromeService
 
 import logging
 import time
@@ -15,27 +11,34 @@ import time
 import config
 
 """
-
+Create a Linkedin Scraper using selenium
 """
 
 
 class LinkedinScraper:
 
     def __init__(self):
+        """
+        init Linkedin Scraper :
+                - create selenium driver
+                - login to linkedin
+        """
         try:
             options = webdriver.ChromeOptions()
             options.add_argument('--ignore-certificate-errors')
             options.add_argument('--incognito')
             # options.add_argument('--user-agent')
-            # options.add_argument('--headless')
+            options.add_argument('--headless')
             service = Service(
-                executable_path=config.CHROME_DRIVER_PATH)  # ChromeService(executable_path=ChromeDriverManager().install())
+                executable_path=config.CHROME_DRIVER_PATH)
+
             self.driver = webdriver.Chrome(options=options, service=service)
+
             self.driver.maximize_window()
 
             self.driver.get("https://linkedin.com/uas/login")
             try:
-                WebDriverWait(self.driver, 60).until(EC.presence_of_element_located((By.ID, "username")))
+                WebDriverWait(self.driver, 60).until(ec.presence_of_element_located((By.ID, "username")))
             except TimeoutException as e:
                 raise ValueError
             self.login(username=config.LINKEDIN_USERNAME, password=config.LINKEDIN_PASSWORD)
